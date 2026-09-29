@@ -10,7 +10,7 @@ the next seven days, enter your uni ID (and your partners'), and tap a slot.
 It is a COMP4020 prototype, not an ANU Sport service, and bookings made here
 are not real.
 
-![Free Hour's booking page: the rules in three cards, the booker's confirmed slot with a Cancel button, a day picker for the next seven days, and a court-by-hour grid where one slot shows as Booked](public/after.png)
+<img src="public/after.png" width="1200" height="1420" alt="Free Hour's booking page: the rules in three cards, the booker's confirmed slot with a Cancel button, a day picker for the next seven days, and a court-by-hour grid where one slot shows as Booked">
 
 ## The system it replaces
 

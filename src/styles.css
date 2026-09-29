@@ -64,6 +64,13 @@ a {
   color: var(--accent-strong);
 }
 
+main img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;

@@ -32,6 +32,9 @@ means here. This file is the rules the agent works under.
   `spec/routes.ts`.
 - Controls carry their full meaning in visible or visually-hidden text, not
   in an `aria-label` that says something different.
+- Put an image in `README.md` as `<img src="public/…">`, not `![](…)`. Astro
+  sends markdown images through its sharp-backed `/_image` endpoint, and
+  production has no sharp. `spec/links.test.ts` catches a broken one.
 
 ## Process
 
