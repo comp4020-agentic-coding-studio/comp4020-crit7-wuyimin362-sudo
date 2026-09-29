@@ -27,8 +27,13 @@ export async function startServer({ dbPath }: { dbPath: string }): Promise<Runni
   }
 
   const port = await freePort();
+  // Run it the way the Dockerfile does. pnpm's bin shims give the test
+  // process a NODE_PATH into node_modules/.pnpm, and inheriting it lets the
+  // server resolve packages production can't (sharp, for one).
+  const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: "production" };
+  delete env.NODE_PATH;
   const child = spawn("node", [ENTRY], {
-    env: { ...process.env, HOST: "127.0.0.1", PORT: String(port), DATABASE_PATH: dbPath },
+    env: { ...env, HOST: "127.0.0.1", PORT: String(port), DATABASE_PATH: dbPath },
     stdio: "ignore",
   });
 
