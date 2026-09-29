@@ -160,6 +160,23 @@ describe("booking the free student hour", () => {
     expectBooked(await book(baseUrl, day, { slot: other, uid: student }, cookie));
   });
 
+  it("forgets the device on request, clearing its cookie", async () => {
+    const day = await lastDay(baseUrl);
+    const [slot] = freeSlots(await load(baseUrl, day));
+    const booked = await book(baseUrl, day, { slot, uid: newUid() });
+    expectBooked(booked);
+
+    const forget = myBooking(await load(baseUrl, day, cookieOf(booked)), slot)
+      ?.closest("#my-booking")
+      ?.querySelector('form[action*="forget"]');
+    expect(forget, "no way to forget this device").toBeTruthy();
+    const res = await post(baseUrl, forget?.getAttribute("action") ?? "", {}, cookieOf(booked));
+    expect(res.status).toBe(303);
+    expect(res.headers.getSetCookie().join("\n")).toMatch(
+      /device=[^;]*;.*(Max-Age=0|Expires=Thu, 01 Jan 1970)/i,
+    );
+  });
+
   it("keeps bookings when the server restarts", async () => {
     const dbPath = join(mkdtempSync(join(tmpdir(), "spec-restart-")), "app.db");
     let server = await startServer({ dbPath });

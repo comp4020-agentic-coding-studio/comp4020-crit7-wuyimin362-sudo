@@ -48,6 +48,7 @@ const MESSAGES: Record<string, string> = {
   closed: "That slot can't be booked any more: it has started, or it's outside the free hour.",
   "not-cancelled":
     "That booking couldn't be cancelled: it has started, or it was made on another device.",
+  forgotten: "This device has been forgotten. Your booking still stands.",
 };
 const status = Astro.url.searchParams.get("status");
 const error = Astro.url.searchParams.get("error");
@@ -120,6 +121,12 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
                 );
               })}
             </ul>
+            <form method="post" action="/api/forget" class="forget">
+              <button class="secondary">Forget this device</button>
+              <span class="hint">
+                On a shared computer? Then the next person can't see or cancel your booking.
+              </span>
+            </form>
           </section>
         )
       }
@@ -221,7 +228,9 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
                               class={`slot ${state}`}
                               disabled={state !== "free"}
                             >
-                              {state === "free" ? "Book" : state === "taken" ? "Booked" : "Past"}
+                              <span class="label">
+                                {state === "free" ? "Book" : state === "taken" ? "Booked" : "Past"}
+                              </span>
                               <span class="visually-hidden">
                                 {` ${venue} ${court.name}, ${slotLabel(hour)}`}
                               </span>
@@ -245,5 +254,23 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
         <a href="https://anu-sport.com.au/student-services/benefits">student benefits page</a>.
       </p>
     </footer>
+    <script>
+      // When anyone books or cancels, the matching cell changes in every open
+      // page, so nobody picks a slot that has just gone. The form works
+      // without this.
+      const source = new EventSource("/api/events");
+      source.addEventListener("message", (event) => {
+        const { slot, taken } = JSON.parse(event.data) as { slot: string; taken: boolean };
+        const button = document.querySelector<HTMLButtonElement>(
+          `button[name="slot"][value="${CSS.escape(slot)}"]`,
+        );
+        const label = button?.querySelector(".label");
+        if (!button || !label) return;
+        button.disabled = taken;
+        button.classList.toggle("free", !taken);
+        button.classList.toggle("taken", taken);
+        label.textContent = taken ? "Booked" : "Book";
+      });
+    </script>
   </body>
 </html>
