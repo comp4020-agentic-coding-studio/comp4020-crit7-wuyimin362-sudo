@@ -1,0 +1,58 @@
+---
+import "../styles.css";
+
+interface Props {
+  title: string;
+  current: "book" | "about";
+}
+
+const { title, current } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600;700;800&display=swap"
+    />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="utility">
+        <p class="tab tab--grey">Student prototype · not an ANU Sport service</p>
+        <a class="tab tab--yellow" href="/#book">Book a court</a>
+      </div>
+      <nav aria-label="site" class="site-nav">
+        <a href="/" class="wordmark">Free Hour</a>
+        <ul>
+          <li>
+            <a href="/#book" aria-current={current === "book" ? "page" : undefined}>Book a court</a>
+          </li>
+          <li><a href="/#how">How it works</a></li>
+          <li>
+            <a href="/readme/" aria-current={current === "about" ? "page" : undefined}>About</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <slot />
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          <strong>Free Hour</strong> is a COMP4020 student prototype, not an ANU Sport service: bookings
+          made here are not real.
+        </p>
+        <p>
+          The rules come from ANU Sport's{" "}
+          <a href="https://anu-sport.com.au/student-services/benefits">student benefits page</a>.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

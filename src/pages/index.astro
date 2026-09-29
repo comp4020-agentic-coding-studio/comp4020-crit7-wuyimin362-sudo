@@ -1,4 +1,5 @@
 ---
+import Base from "../layouts/Base.astro";
 import {
   bookingsOf,
   isDevice,
@@ -18,7 +19,6 @@ import {
   isBookable,
   slotLabel,
 } from "../lib/time";
-import "../styles.css";
 
 const now = canberraNow();
 const days = bookableDays(now);
@@ -55,33 +55,20 @@ const error = Astro.url.searchParams.get("error");
 const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
 ---
 
-<!doctype html>
-<html lang="en-AU">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Free Hour — book your free student court hour</title>
-  </head>
-  <body>
-    <nav aria-label="site" class="site">
-      <a href="/" class="brand" aria-current="page">Free Hour</a>
-      <a href="/readme/">About</a>
-    </nav>
-    <main>
-      <h1>Book your free student hour</h1>
-      <p class="lede">
-        Every ANU student gets one free hour a week on the courts, weekdays before 2pm. Pick a
-        slot below: no front desk, and no waiting until 15 minutes before.
-      </p>
-      <ul class="rules">
-        <li><strong>One free hour</strong> per student per week (Monday to Sunday).</li>
-        <li><strong>Weekdays, 6am–2pm</strong> (from 9am on public holidays), up to 7 days ahead.</li>
-        <li>
-          <strong>List everyone playing.</strong> Each listed player uses their free hour for that
-          week, so a group can't chain hours.
-        </li>
-      </ul>
+<Base title="Free Hour — book your free student court hour" current="book">
+  <main>
+    <section class="hero">
+      <div class="wrap hero__inner">
+        <h1>Book your free student hour</h1>
+        <p class="hero__lede">
+          Every ANU student gets one free court hour a week, weekdays before 2pm. Book it here in
+          seconds: no front desk, no 15-minute wait.
+        </p>
+        <a class="pill pill--yellow" href="#book">Book a court now</a>
+      </div>
+    </section>
 
+    <div class="wrap">
       {
         message && (
           <p class:list={["notice", { error: Boolean(error) }]} role="status">
@@ -112,7 +99,7 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
                     ) : (
                       <form method="post" action="/api/bookings/cancel">
                         <input type="hidden" name="id" value={booking.id} />
-                        <button class="secondary">
+                        <button class="pill pill--grey">
                           Cancel<span class="visually-hidden">{` ${where}, ${when}`}</span>
                         </button>
                       </form>
@@ -122,7 +109,7 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
               })}
             </ul>
             <form method="post" action="/api/forget" class="forget">
-              <button class="secondary">Forget this device</button>
+              <button class="pill pill--grey">Forget this device</button>
               <span class="hint">
                 On a shared computer? Then the next person can't see or cancel your booking.
               </span>
@@ -131,146 +118,165 @@ const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
         )
       }
 
-      <h2 id="pick">Pick a day and a slot</h2>
-      <nav aria-label="Days" class="days">
-        <ul>
-          {
-            days.map((d) => (
-              <li>
-                <a href={`/?day=${d}#pick`} aria-current={d === day ? "date" : undefined}>
-                  {dayLabel(d)}
-                  {holidayName(d) && <span class="holiday">{holidayName(d)}</span>}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </nav>
+      <section id="book" class="book" aria-labelledby="book-title">
+        <h2 id="book-title">Book a court</h2>
 
-      <form method="post" action="/api/bookings" class="booking">
-        <fieldset>
-          <legend>Who's playing</legend>
-          <div class="fields">
-            <div class="field">
-              <label for="uid">Your uni ID</label>
-              <input
-                id="uid"
-                name="uid"
-                required
-                pattern="[uU][0-9]{7}"
-                autocomplete="off"
-                spellcheck="false"
-                aria-describedby="uid-hint"
-              />
+        <h3 class="step"><span class="step__num" aria-hidden="true">1</span>Pick a day</h3>
+        <nav aria-label="Days" class="days">
+          <ul>
+            {
+              days.map((d) => (
+                <li>
+                  <a href={`/?day=${d}#book`} aria-current={d === day ? "date" : undefined}>
+                    {dayLabel(d)}
+                    {holidayName(d) && <span class="holiday">{holidayName(d)}</span>}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+
+        <form method="post" action="/api/bookings" class="booking">
+          <fieldset class="who">
+            <legend class="step">
+              <span class="step__num" aria-hidden="true">2</span>Who's playing
+            </legend>
+            <div class="fields">
+              <div class="field">
+                <label for="uid">Your uni ID</label>
+                <input
+                  id="uid"
+                  name="uid"
+                  required
+                  pattern="[uU][0-9]{7}"
+                  autocomplete="off"
+                  spellcheck="false"
+                  aria-describedby="uid-hint"
+                />
+              </div>
+              {
+                Array.from({ length: MAX_PARTNERS }, (_, i) => (
+                  <div class="field">
+                    <label for={`partner-${i + 1}`}>
+                      Partner {i + 1} <span class="optional">(optional)</span>
+                    </label>
+                    <input
+                      id={`partner-${i + 1}`}
+                      name="partner"
+                      pattern="[uU][0-9]{7}"
+                      autocomplete="off"
+                      spellcheck="false"
+                      aria-describedby="uid-hint"
+                    />
+                  </div>
+                ))
+              }
             </div>
-            {
-              Array.from({ length: MAX_PARTNERS }, (_, i) => (
-                <div class="field">
-                  <label for={`partner-${i + 1}`}>
-                    Partner {i + 1} <span class="optional">(optional)</span>
-                  </label>
-                  <input
-                    id={`partner-${i + 1}`}
-                    name="partner"
-                    pattern="[uU][0-9]{7}"
-                    autocomplete="off"
-                    spellcheck="false"
-                    aria-describedby="uid-hint"
-                  />
-                </div>
-              ))
-            }
-          </div>
-          <p id="uid-hint" class="hint">
-            A u and 7 digits. Uni IDs are only used to count free hours and are never shown to
-            anyone.
-          </p>
-        </fieldset>
+            <p id="uid-hint" class="hint">
+              A u and 7 digits. Uni IDs are only used to count free hours and are never shown to
+              anyone.
+            </p>
+          </fieldset>
 
-        <div class="grid" role="region" aria-labelledby="slots-caption" tabindex="0">
-          <table>
-            <caption id="slots-caption">
-              {dayLabel(day)}
-              {holiday && ` · ${holiday}, opens 9am`} · Canberra time
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Court</th>
-                {hours.map((hour) => <th scope="col">{hourLabel(hour)}</th>)}
-              </tr>
-            </thead>
-            {
-              venues.map(([venue, courts]) => (
-                <tbody>
-                  <tr class="venue">
-                    <th scope="rowgroup" colspan={hours.length + 1}>
-                      {venue}
-                    </th>
-                  </tr>
-                  {courts.map((court) => (
-                    <tr>
-                      <th scope="row">
-                        {court.name}
-                        <span class="sports">{court.sports}</span>
+          <h3 class="step"><span class="step__num" aria-hidden="true">3</span>Tap a free slot</h3>
+          <div class="grid" role="region" aria-labelledby="slots-caption" tabindex="0">
+            <table>
+              <caption id="slots-caption">
+                {dayLabel(day)}
+                {holiday && ` · ${holiday}, opens 9am`} · Canberra time
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Court</th>
+                  {hours.map((hour) => <th scope="col">{hourLabel(hour)}</th>)}
+                </tr>
+              </thead>
+              {
+                venues.map(([venue, courts]) => (
+                  <tbody>
+                    <tr class="venue">
+                      <th scope="rowgroup" colspan={hours.length + 1}>
+                        {venue}
                       </th>
-                      {hours.map((hour) => {
-                        const key = slotKey({ resourceId: court.id, date: day, hour });
-                        const state = taken.has(key)
-                          ? "taken"
-                          : isBookable(day, hour, now)
-                            ? "free"
-                            : "past";
-                        return (
-                          <td>
-                            <button
-                              name="slot"
-                              value={key}
-                              class={`slot ${state}`}
-                              disabled={state !== "free"}
-                            >
-                              <span class="label">
-                                {state === "free" ? "Book" : state === "taken" ? "Booked" : "Past"}
-                              </span>
-                              <span class="visually-hidden">
-                                {` ${venue} ${court.name}, ${slotLabel(hour)}`}
-                              </span>
-                            </button>
-                          </td>
-                        );
-                      })}
                     </tr>
-                  ))}
-                </tbody>
-              ))
-            }
-          </table>
-        </div>
-      </form>
-    </main>
-    <footer>
-      <p>
-        A COMP4020 student prototype, not an ANU Sport service: bookings made here are not real.
-        The rules come from ANU Sport's{" "}
-        <a href="https://anu-sport.com.au/student-services/benefits">student benefits page</a>.
-      </p>
-    </footer>
-    <script>
-      // When anyone books or cancels, the matching cell changes in every open
-      // page, so nobody picks a slot that has just gone. The form works
-      // without this.
-      const source = new EventSource("/api/events");
-      source.addEventListener("message", (event) => {
-        const { slot, taken } = JSON.parse(event.data) as { slot: string; taken: boolean };
-        const button = document.querySelector<HTMLButtonElement>(
-          `button[name="slot"][value="${CSS.escape(slot)}"]`,
-        );
-        const label = button?.querySelector(".label");
-        if (!button || !label) return;
-        button.disabled = taken;
-        button.classList.toggle("free", !taken);
-        button.classList.toggle("taken", taken);
-        label.textContent = taken ? "Booked" : "Book";
-      });
-    </script>
-  </body>
-</html>
+                    {courts.map((court) => (
+                      <tr>
+                        <th scope="row">
+                          {court.name}
+                          <span class="sports">{court.sports}</span>
+                        </th>
+                        {hours.map((hour) => {
+                          const key = slotKey({ resourceId: court.id, date: day, hour });
+                          const state = taken.has(key)
+                            ? "taken"
+                            : isBookable(day, hour, now)
+                              ? "free"
+                              : "past";
+                          return (
+                            <td>
+                              <button
+                                name="slot"
+                                value={key}
+                                class={`slot ${state}`}
+                                disabled={state !== "free"}
+                              >
+                                <span class="label">
+                                  {state === "free" ? "Book" : state === "taken" ? "Booked" : "Past"}
+                                </span>
+                                <span class="visually-hidden">
+                                  {` ${venue} ${court.name}, ${slotLabel(hour)}`}
+                                </span>
+                              </button>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                ))
+              }
+            </table>
+          </div>
+        </form>
+      </section>
+
+      <section id="how" class="how" aria-labelledby="how-title">
+        <h2 id="how-title">How the free hour works</h2>
+        <ul class="rules">
+          <li>
+            <strong>One free hour a week</strong>
+            Every ANU student, Monday to Sunday.
+          </li>
+          <li>
+            <strong>Weekdays, 6am–2pm</strong>
+            From 9am on public holidays. Book up to 7 days ahead.
+          </li>
+          <li>
+            <strong>List everyone playing</strong>
+            Each listed player uses their free hour for that week, so a group can't chain hours.
+          </li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // When anyone books or cancels, the matching cell changes in every open
+    // page, so nobody picks a slot that has just gone. The form works
+    // without this.
+    const source = new EventSource("/api/events");
+    source.addEventListener("message", (event) => {
+      const { slot, taken } = JSON.parse(event.data) as { slot: string; taken: boolean };
+      const button = document.querySelector<HTMLButtonElement>(
+        `button[name="slot"][value="${CSS.escape(slot)}"]`,
+      );
+      const label = button?.querySelector(".label");
+      if (!button || !label) return;
+      button.disabled = taken;
+      button.classList.toggle("free", !taken);
+      button.classList.toggle("taken", taken);
+      label.textContent = taken ? "Booked" : "Book";
+    });
+  </script>
+</Base>

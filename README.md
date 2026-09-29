@@ -9,7 +9,7 @@ over the next seven days, enter your uni ID (and your partners'), and tap a
 slot. This is a COMP4020 prototype, not an ANU Sport service, and bookings
 made here are not real.
 
-<img src="public/after.png" width="1200" height="1420" alt="Free Hour's booking page: the rules in three cards, the booker's confirmed slot with a Cancel button, a day picker for the next seven days, and a court-by-hour grid where one slot shows as Booked">
+<img src="public/after.png" width="1200" height="1420" alt="Free Hour's booking page in ANU Sport's colours: a blue banner with a yellow Book a court now button, the booker's confirmed slot with a Cancel button, then numbered steps to pick a day, list the players and tap a free slot in a court-by-hour grid">
 
 ## The system it replaces
 
@@ -34,8 +34,11 @@ find, and awkward once you're there. The free hour is the sharpest case:
 
 ## What good looks like here
 
-- **Booking is the homepage.** The first screen has the rules, the next
-  week's free slots and one form. There's no login, just a uni ID and a tap.
+- **Booking is the first thing you see.** The homepage opens on a "Book a
+  court now" button. A yellow "Book a court" tab sits in the corner of every
+  page, where ANU Sport keeps its timetable tab. Booking takes three numbered
+  steps: pick a day, say who's playing, tap a free slot. There's no login,
+  just a uni ID and a tap.
 - **The rules are written once, in plain language, and the database enforces
   them instead of a person at a desk.** The schema refuses:
   - a slot that's already booked;
@@ -55,6 +58,15 @@ find, and awkward once you're there. The free hour is the sharpest case:
 - **It's accessible and works on a phone.** The grid has real table headers,
   each slot button's spoken name says which court and hour it books, and the
   court column stays put on narrow screens.
+- **It looks like part of ANU Sport**, so students recognise where they are.
+  It uses the same Mulish type, blue, yellow pill buttons and uppercase
+  headings. Three of ANU Sport's own colour pairs fail WCAG AA contrast:
+  - the yellow buttons' text (4.15:1);
+  - the light-blue current-page link (2.64:1);
+  - white on the light-blue banner (2.16:1).
+
+  Those colours are darkened here. There's no ANU Sport logo or name on the
+  page, and every page says it's a student prototype.
 - **It's private.** Uni IDs are used only to count free hours. They are never
   shown on a page or put in a cookie. A random device token lets the booker
   cancel, and "Forget this device" clears it on a shared computer.
@@ -85,7 +97,7 @@ For the crit to judge:
 
 - whether it's actually easier than the desk;
 - whether the rules read clearly;
-- how it looks;
+- how closely it should follow ANU Sport's look;
 - whether counting every player is the right reading of the rule;
 - the modelling below.
 
