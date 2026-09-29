@@ -1,5 +1,57 @@
 ---
+import {
+  bookingsOf,
+  isDevice,
+  listResources,
+  MAX_PARTNERS,
+  slotKey,
+  takenOn,
+} from "../lib/bookings";
+import type { Resource } from "../lib/schema";
+import {
+  bookableDays,
+  canberraNow,
+  dayLabel,
+  holidayName,
+  hourLabel,
+  hoursOf,
+  isBookable,
+  slotLabel,
+} from "../lib/time";
 import "../styles.css";
+
+const now = canberraNow();
+const days = bookableDays(now);
+const requested = Astro.url.searchParams.get("day");
+const day = days.find((d) => d === requested) ?? days[0];
+const hours = hoursOf(day);
+const taken = takenOn(day);
+const holiday = holidayName(day);
+
+const device = Astro.cookies.get("device")?.value;
+const mine = isDevice(device) ? bookingsOf(device, now) : [];
+
+const venues: [string, Resource[]][] = [];
+for (const resource of listResources()) {
+  const group = venues.find(([venue]) => venue === resource.venue);
+  if (group) group[1].push(resource);
+  else venues.push([resource.venue, [resource]]);
+}
+
+const MESSAGES: Record<string, string> = {
+  booked: "Booked — it's yours. It's listed under “Your booking”.",
+  cancelled: "Cancelled. The slot is free again, and so is every player's hour.",
+  "slot-taken": "Someone booked that slot just before you. Pick another one.",
+  "week-used": "One of the players has already used their free hour that week.",
+  invalid:
+    "Check the uni IDs: each is a u and 7 digits, and each player can be listed only once.",
+  closed: "That slot can't be booked any more: it has started, or it's outside the free hour.",
+  "not-cancelled":
+    "That booking couldn't be cancelled: it has started, or it was made on another device.",
+};
+const status = Astro.url.searchParams.get("status");
+const error = Astro.url.searchParams.get("error");
+const message = (error && MESSAGES[error]) || (status && MESSAGES[status]);
 ---
 
 <!doctype html>
@@ -10,13 +62,188 @@ import "../styles.css";
     <title>Free Hour — book your free student court hour</title>
   </head>
   <body>
-    <nav aria-label="site">
-      <a href="/">Book</a>
+    <nav aria-label="site" class="site">
+      <a href="/" class="brand" aria-current="page">Free Hour</a>
       <a href="/readme/">About</a>
     </nav>
     <main>
-      <h1>Free Hour</h1>
-      <p>Online booking for ANU students' free weekly court hour is on its way.</p>
+      <h1>Book your free student hour</h1>
+      <p class="lede">
+        Every ANU student gets one free hour a week on the courts, weekdays before 2pm. Pick a
+        slot below: no front desk, and no waiting until 15 minutes before.
+      </p>
+      <ul class="rules">
+        <li><strong>One free hour</strong> per student per week (Monday to Sunday).</li>
+        <li><strong>Weekdays, 6am–2pm</strong> (from 9am on public holidays), up to 7 days ahead.</li>
+        <li>
+          <strong>List everyone playing.</strong> Each listed player uses their free hour for that
+          week, so a group can't chain hours.
+        </li>
+      </ul>
+
+      {
+        message && (
+          <p class:list={["notice", { error: Boolean(error) }]} role="status">
+            {message}
+          </p>
+        )
+      }
+
+      {
+        mine.length > 0 && (
+          <section id="my-booking" aria-labelledby="my-booking-title">
+            <h2 id="my-booking-title">Your booking</h2>
+            <ul>
+              {mine.map((booking) => {
+                const where = `${booking.venue} ${booking.name}`;
+                const when = `${dayLabel(booking.slot.date)}, ${slotLabel(booking.slot.hour)}`;
+                return (
+                  <li data-slot={slotKey(booking.slot)}>
+                    <span>
+                      <strong>{where}</strong>
+                      <span class="when">{when}</span>
+                      <span class="players">
+                        {booking.players} {booking.players === 1 ? "player" : "players"}
+                      </span>
+                    </span>
+                    {booking.started ? (
+                      <span class="underway">Under way</span>
+                    ) : (
+                      <form method="post" action="/api/bookings/cancel">
+                        <input type="hidden" name="id" value={booking.id} />
+                        <button class="secondary">
+                          Cancel<span class="visually-hidden">{` ${where}, ${when}`}</span>
+                        </button>
+                      </form>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )
+      }
+
+      <h2 id="pick">Pick a day and a slot</h2>
+      <nav aria-label="Days" class="days">
+        <ul>
+          {
+            days.map((d) => (
+              <li>
+                <a href={`/?day=${d}#pick`} aria-current={d === day ? "date" : undefined}>
+                  {dayLabel(d)}
+                  {holidayName(d) && <span class="holiday">{holidayName(d)}</span>}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <form method="post" action="/api/bookings" class="booking">
+        <fieldset>
+          <legend>Who's playing</legend>
+          <div class="fields">
+            <div class="field">
+              <label for="uid">Your uni ID</label>
+              <input
+                id="uid"
+                name="uid"
+                required
+                pattern="[uU][0-9]{7}"
+                autocomplete="off"
+                spellcheck="false"
+                aria-describedby="uid-hint"
+              />
+            </div>
+            {
+              Array.from({ length: MAX_PARTNERS }, (_, i) => (
+                <div class="field">
+                  <label for={`partner-${i + 1}`}>
+                    Partner {i + 1} <span class="optional">(optional)</span>
+                  </label>
+                  <input
+                    id={`partner-${i + 1}`}
+                    name="partner"
+                    pattern="[uU][0-9]{7}"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-describedby="uid-hint"
+                  />
+                </div>
+              ))
+            }
+          </div>
+          <p id="uid-hint" class="hint">
+            A u and 7 digits. Uni IDs are only used to count free hours and are never shown to
+            anyone.
+          </p>
+        </fieldset>
+
+        <div class="grid" role="region" aria-labelledby="slots-caption" tabindex="0">
+          <table>
+            <caption id="slots-caption">
+              {dayLabel(day)}
+              {holiday && ` · ${holiday}, opens 9am`} · Canberra time
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Court</th>
+                {hours.map((hour) => <th scope="col">{hourLabel(hour)}</th>)}
+              </tr>
+            </thead>
+            {
+              venues.map(([venue, courts]) => (
+                <tbody>
+                  <tr class="venue">
+                    <th scope="rowgroup" colspan={hours.length + 1}>
+                      {venue}
+                    </th>
+                  </tr>
+                  {courts.map((court) => (
+                    <tr>
+                      <th scope="row">
+                        {court.name}
+                        <span class="sports">{court.sports}</span>
+                      </th>
+                      {hours.map((hour) => {
+                        const key = slotKey({ resourceId: court.id, date: day, hour });
+                        const state = taken.has(key)
+                          ? "taken"
+                          : isBookable(day, hour, now)
+                            ? "free"
+                            : "past";
+                        return (
+                          <td>
+                            <button
+                              name="slot"
+                              value={key}
+                              class={`slot ${state}`}
+                              disabled={state !== "free"}
+                            >
+                              {state === "free" ? "Book" : state === "taken" ? "Booked" : "Past"}
+                              <span class="visually-hidden">
+                                {` ${venue} ${court.name}, ${slotLabel(hour)}`}
+                              </span>
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              ))
+            }
+          </table>
+        </div>
+      </form>
     </main>
+    <footer>
+      <p>
+        A COMP4020 student prototype, not an ANU Sport service: bookings made here are not real.
+        The rules come from ANU Sport's{" "}
+        <a href="https://anu-sport.com.au/student-services/benefits">student benefits page</a>.
+      </p>
+    </footer>
   </body>
 </html>
