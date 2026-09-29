@@ -1,54 +1,54 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-Written by you, for a reader: how you got from the brief to the harness and
-agentic workflow behind this submission. Markers read this file and follow its
-citations; they don't trawl the repo for evidence you didn't point at.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
-
 ## What I built
 
-A sentence or two. `README.md` is where the account of what the app is and what
-good means here lives; this file is how you got there.
+Free Hour books ANU Sport's free weekly student court hour online. Today that
+hour can only be claimed at the front desk, at most 15 minutes before the
+slot. `README.md` makes the case for what good means here.
 
 ## How I got here
 
-The account of the process: how the work actually went, and how you knew the
-result was right. Tell it in whatever order makes it clear. A weekly prototype
-needs a paragraph or two; an assignment needs more.
+I pointed the agent at ANU Sport's site:
 
-Cite the record as you go, as links whose text is the commit hash or range and
-whose target is this repo's commit or compare URL, so a reader clicks straight
-to the evidence:
+> https://anu-sport.com.au/我想将这个网站作为我的作业对象 你看看哪些地方可有优化
+> (I want this site as my subject; see what could be improved.)
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+It read the live pages and found three problems: a timetable locked in an
+image, rules that contradict each other, and a free hour you can't book
+online. I chose that slice from experience:
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+> 选 b 因为我试过这个网站 它的预定的地方很难找 而且很不好用
+> (B, because I've tried it: booking is hard to find and hard to use.)
 
-> the prompt, verbatim
+In plan mode I made the product calls: every listed player uses their hour,
+and you can book up to seven days ahead. I also picked the rule groups in
+`CLAUDE.md`
+([`879470c`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/879470c)).
+The contract tests came first, red
+([`87a5256`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/87a5256)).
+The schema then turned the fixed rules into constraints
+([`736d973`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/736d973)),
+and the booking flow turned the tests green
+([`379a7b7`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/379a7b7)).
 
-Screenshots are welcome where one carries the point better than a sentence does.
-Commit the file to this repo and link it with a **relative** path, which is what
-makes it render on GitHub: `![alt text](docs/before.png)`. Images don't count
-towards the word count and don't replace the citation.
+Once I saw it running, I asked for more:
 
-## Before you ship
+> UI 风格要和原来的网站相近 而且我要很容易的找到 book 的入口
+> (Make it look like the original site, and make the booking entry easy to find.)
 
-`pnpm check:evidence` verifies that this comment is gone, that your citations
-resolve to real commits, that a crit week's reflection entry is in
-`reflections/`, and that your `CLAUDE.md` is there. It checks that your account
-is traceable, not that it is good: that is the marker's call.
+The agent read ANU Sport's colours and type from its live pages. It darkened
+the three colour pairs that fail contrast, and put a Book a court tab on every
+page
+([`7aac34f`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/7aac34f)).
 
-Images aren't checked: unlike a citation whose SHA doesn't resolve, a broken
-image is visible the moment this file is rendered on GitHub.
+The correction that mattered was a link check that passed when it shouldn't
+have. The test server had inherited pnpm's `NODE_PATH`, so it could load a
+library production can't. Running the server the way the Dockerfile does
+turned the check red
+([`3818d94`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/3818d94)),
+and the fix turned it green
+([`b471f39`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-wuyimin362-sudo/commit/b471f39)).
+
+I knew it worked from two things. `pnpm check` ran 39 checks. Screenshots at
+desktop, tablet and phone widths caught three layout regressions in the
+restyle.
